@@ -32,6 +32,7 @@
             </div>
         </div>
     </div>
+    <!-- <----------------------------------------------------------查询页面-------------------------------------------------------->
     <div data-role="page" id="index2">
         <div data-role="header"><h1>列车时刻表查询</h1></div>
         <div role="main" class="ui-content">我是内容 <a href="#index" data-transition="slide">跳转到index1</a>
@@ -45,6 +46,9 @@
                 <div class="ui-field-contain">
                 <label>终到站</label>
                 <input type="text"></div>
+
+                <a data-role="button" id="loading">点我加载</a>
+
             </form>
         </div>
         <div data-role="footer"><h2>Thanks!</h2></div>
@@ -52,4 +56,27 @@
 </body>
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
+<script>
+    var url='http://crossorigin.me/http://www.webxml.com.cn/WebServices/TrainTimeWebService.asmx/getDetailInfoByTrainCode?UserID=';
+    var pre_url="http://www.corsproxy.com/"
+    $(document).on("pageinit" , "#index2" , function(){
+        $("#loading").on("click" , function(){
+            $.mobile.loading("show",{
+                text:'加载中...',
+                textVisible:true,
+                theme:'a',
+            });
+            $.get(url , {TrainCode:'G1'} , function(data){
+                console.log(data);
+                $.mobile.loading("hide");
+            });
+        });
+
+        function bind(){
+
+        }
+
+    });
+
+</script>
 </html>
