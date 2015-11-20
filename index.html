@@ -38,16 +38,17 @@
         <div role="main" class="ui-content">我是内容 <a href="#index" data-transition="slide">跳转到index1</a>
             <form>
                 <div class="ui-field-contain">
-                <label>发车时间</label>
-                <input type="text"></div>
+                <label>车次</label>
+                <input type="text" id="searchNo"></div>
                 <div class="ui-field-contain">
                 <label>始发地</label>
-                <input type="text"></div>
+                <input type="text" id="searchStart"></div>
                 <div class="ui-field-contain">
                 <label>终到站</label>
-                <input type="text"></div>
+                <input type="text" id="searchEnd"></div>
 
-                <a data-role="button" id="loading">点我加载</a>
+                <input type="button" value="点我加载" id="loading"/>
+                <ul data-role="listview" data-inset="true" id="list"></ul>
 
             </form>
         </div>
@@ -57,26 +58,81 @@
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
 <script>
-    var url='http://crossorigin.me/http://www.webxml.com.cn/WebServices/TrainTimeWebService.asmx/getDetailInfoByTrainCode?UserID=';
-    var pre_url="http://www.corsproxy.com/"
+    var url1='http://www.webxml.com.cn/WebServices/TrainTimeWebService.asmx/getStationAndTimeDataSetByLikeTrainCode?UserID=';
+    var url2='http://www.webxml.com.cn/WebServices/TrainTimeWebService.asmx/getStationAndTimeByStationName?UserID=';
+    var url3='http://www.webxml.com.cn/WebServices/TrainTimeWebService.asmx/getStationAndTimeByTrainCode?UserID=';
+    var pre_url="http://crossorigin.me/"
     $(document).on("pageinit" , "#index2" , function(){
-        $("#loading").on("click" , function(){
-            $.mobile.loading("show",{
-                text:'加载中...',
-                textVisible:true,
-                theme:'a',
-            });
-            $.get(url , {TrainCode:'G1'} , function(data){
-                console.log(data);
-                $.mobile.loading("hide");
-            });
-        });
 
-        function bind(){
-
-        }
+        (function bindAction(){
+            $("#loading").on("click" , getTrainList);
+        })();
 
     });
+
+    function getTrainList(){
+
+        if(chkform()){
+
+            var _url = url1;
+            var _data = {}
+            var _arr = [];
+
+            if($("#searchNo").val()){
+                _data.TrainCode = $("#searchNo").val();
+            }else{
+                _url = url2;
+                _data.StartStation = $("#searchStart").val();
+                _data.ArriveStation = $("#searchEnd").val();
+            }
+
+            $.mobile.loading("show" , {
+                text: '正在加载' ,
+                textVisible: true,
+                theme:'a'
+            });
+            var searchButton = $(this);
+            searchButton.button("option" , "disabled" , true);
+
+            $.get(pre_url + _url , _data , function(data){
+
+                var timeTable = $(data).find("TimeTable");
+                timeTable.each(function(index , each){
+                    var i = index;
+                    
+                    var that = $(this);
+                    if(that.find("FirstStation").html() == "数据没有被发现"){
+                        alert("数据没有被发现，请检查输入参数！");
+                    }
+                    else{
+                        var _html = '<li><a href="#"><h2>列车时刻:</h2><p>' + that.find("FirstStation").text() + '-' + that.find("LastStation").text() + '</p>' 
+                                    +'<p class="ui-li-aside">'+that.find("StartTime").text()+'开</p>' 
+                                    +'<p>' + '用时:' + that.find("ArriveTime").text() + '</p>'
+                                    +'</a></li>';
+                        _arr.push(_html);
+                    }
+
+                });
+                $("#list").html(_arr.join(""));
+                $("#list").listview("refresh");
+                searchButton.button("option" , "disabled" , false);
+                $.mobile.loading("hide");
+            });
+        }
+
+            else{
+                alert("请输入车次或者输入起始站和终点站");
+            }
+
+
+
+    }
+
+    function chkform(){
+        if($("#searchNo").val() || ($("#searchStart").val() && $("#searchEnd").val())){
+            return true;
+        }else{return false;}
+    }
 
 </script>
 </html>
